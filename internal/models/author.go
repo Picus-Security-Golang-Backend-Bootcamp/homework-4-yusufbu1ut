@@ -7,24 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
-//var id = 0 //for csv to slices after db adding; helper/readInsert
-
 type Author struct {
 	gorm.Model
 	NameSurname string `json:"author"`
 	Age         int    `json:"age"`
 }
 
-// func NewAuthor(nameSurname string) *Author { //for csv to slices after db adding; helper/readInsert
-// 	id++
-// 	return &Author{
-// 		ID:          uint(id),
-// 		NameSurname: nameSurname,
-// 		Age:         funcs.RandomInt(20, 80),
-// 	}
-// }
-
-func NewAuth(nameSurname string) *Author { //for csv to db adding ; helper/csvToDB
+func NewAuth(nameSurname string) *Author {
 	return &Author{
 		NameSurname: nameSurname,
 		Age:         funcs.RandomInt(20, 80),

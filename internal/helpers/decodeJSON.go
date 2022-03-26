@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// MalformedRequest for responses
 type MalformedRequest struct {
 	Status int
 	Msg    string
@@ -18,6 +19,7 @@ func (mr *MalformedRequest) Error() string {
 	return mr.Msg
 }
 
+// DecodeJSONBody checks requests body and prepare responses
 func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	if r.Header.Get("Content-Type") != "" {
 		value := r.Header.Get("Content-Type")

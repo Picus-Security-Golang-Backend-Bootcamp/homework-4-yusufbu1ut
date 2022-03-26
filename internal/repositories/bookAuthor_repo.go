@@ -70,11 +70,6 @@ func (r *BookAuthRepository) DeleteByISBN(isbn int) ([]int, error) {
 
 	var authorsID []int
 	for _, v := range ba {
-		// var book_authors []Book_Author
-		// rslt := r.db.Find(&book_authors, "author_id = ?", v.AuthorID)
-		// if rslt.Error != nil {
-		// 	return nil, rslt.Error
-		// }
 		book_authors, err := r.FindByAuthorID(int(v.AuthorID))
 		if err != nil {
 			return nil, err
@@ -122,4 +117,9 @@ func (r *BookAuthRepository) Create(bauthors models.Book_Author) error {
 	}
 
 	return declaredElement
+}
+
+func (r *BookAuthRepository) Update(bauthors models.Book_Author) error {
+	r.db.Save(bauthors)
+	return nil
 }

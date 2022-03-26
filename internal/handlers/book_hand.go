@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,15 +11,23 @@ import (
 
 func GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	books, err := helpers.ListBook(*RepBook, *RepAuthor, *RepBookAuth)
+	if err != nil {
+		CheckErr(err, w)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
-	books, _ := helpers.ListBook(*RepBook, *RepAuthor, *RepBookAuth)
 	json.NewEncoder(w).Encode(books)
 }
 
 func GetBookByName(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application-json")
 	params := mux.Vars(r)
-	book, _ := helpers.SearchByBookInput(params["name"], *RepBook, *RepAuthor, *RepBookAuth)
+	book, err := helpers.SearchByBookInput(params["name"], *RepBook, *RepAuthor, *RepBookAuth)
+	if err != nil {
+		CheckErr(err, w)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(book)
 }
@@ -34,19 +41,31 @@ func GetBookById(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Wrong Id")
 		return
 	}
-	book, _ := helpers.GetBookById(id, *RepBook, *RepAuthor, *RepBookAuth)
+	book, err := helpers.GetBookById(id, *RepBook, *RepAuthor, *RepBookAuth)
+	if err != nil {
+		CheckErr(err, w)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(book[1])
+	json.NewEncoder(w).Encode(book[0])
 }
 
 func CreateBook(w http.ResponseWriter, r *http.Request) {
 	var b helpers.BookItem
 
 	err := helpers.DecodeJSONBody(w, r, &b)
-	CheckErr(err, w)
+	if err != nil {
+		CheckErr(err, w)
+		return
+	}
 
-	fmt.Fprintf(w, "Person: %+v", b)
-	fmt.Printf("****%s*****", b.Publisher)
+	err = helpers.CreateBook(b, *RepBook, *RepAuthor, *RepBookAuth)
+	if err != nil {
+		CheckErr(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode("Created")
 }
 
 func DeleteBook(w http.ResponseWriter, r *http.Request) {
@@ -58,10 +77,48 @@ func DeleteBook(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Wrong Id")
 		return
 	}
-	helpers.DeleteByBookID(id, *RepBook, *RepAuthor, *RepBookAuth)
+	err = helpers.DeleteByBookID(id, *RepBook, *RepAuthor, *RepBookAuth)
+	if err != nil {
+		CheckErr(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode("Deleted")
 }
 
 func UpdateBook(w http.ResponseWriter, r *http.Request) {
+	var b helpers.BookItem
 
+	err := helpers.DecodeJSONBody(w, r, &b)
+	if err != nil {
+		CheckErr(err, w)
+		return
+	}
+
+	err = helpers.UpdateBook(b, *RepBook, *RepAuthor, *RepBookAuth)
+	if err != nil {
+		CheckErr(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode("Updated")
+}
+
+func BuyBook(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application-json")
+	params := mux.Vars(r)
+	id, err1 := strconv.Atoi(params["id"])
+	cnt, err2 := strconv.Atoi(params["cnt"])
+	if err1 != nil || err2 != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err := helpers.BookBuy(id, cnt, *RepBook)
+	if err != nil {
+		CheckErr(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode("Buyed")
 }
